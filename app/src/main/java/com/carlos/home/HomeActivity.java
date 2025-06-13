@@ -44,11 +44,13 @@ import com.carlos.common.ui.activity.MirrorActivity;
 import com.carlos.common.imagepicker.PhotoSelector;
 import com.carlos.common.ui.activity.SettingActivity;
 import com.carlos.common.ui.activity.base.VActivity;
+import com.carlos.common.ui.activity.base.VerifyActivity;
 import com.carlos.common.ui.adapter.decorations.ItemOffsetDecoration;
 import com.carlos.common.utils.FileTools;
 import com.carlos.common.utils.PathUtils;
 import com.carlos.common.utils.ResponseProgram;
 import com.carlos.common.utils.xapk.XAPKInstaller;
+import com.carlos.common.widget.toast.Toasty;
 import com.carlos.home.XposedManager.XposedManagerActivity;
 import com.carlos.utils.FileUtils1;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -86,7 +88,7 @@ import com.lody.virtual.remote.VAppInstallerResult;
 /**
  * @author LodyChen
  */
-public class HomeActivity extends VActivity implements HomeContract.HomeView, LaunchpadAdapter.OnAppClickListener {
+public class HomeActivity extends VerifyActivity implements HomeContract.HomeView, LaunchpadAdapter.OnAppClickListener {
 
 
     public static final int CROP_CODE = 11;//剪切裁剪
@@ -263,7 +265,7 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView, La
 
         noApplicationList = findViewById(R.id.no_application_list);
         findViewById(R.id.main_fun_btn).setOnClickListener((view)->{
-            ListAppActivity.gotoListApp(this,ListAppActivity.ACTION_CLONE_APP);
+//            ListAppActivity.gotoListApp(this,ListAppActivity.ACTION_CLONE_APP);
         });
         tipsNotifiction = findViewById(R.id.tipsNotifiction);
         if (isUpgrade()) {
@@ -732,6 +734,22 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView, La
    // pos, data
     @Override
     public void onAppClick(int position, AppData data) {
+        if (this.isNovatioNecessaria()) {
+            Toasty.warning(this.getContext(), this.getString(R.string.update_latest_version)).show();
+        } else {
+            InstalledAppInfo installedAppInfo = VirtualCore.get().getInstalledAppInfo(data.getPackageName(), 0);
+            ApplicationInfo applicationInfo = installedAppInfo.getApplicationInfo(installedAppInfo.getInstalledUsers()[0]);
+            PackageManager pm = this.getPackageManager();
+            CharSequence sequence = applicationInfo.loadLabel(pm);
+            String appName = sequence.toString();
+
+            this.checkExtProcessAndlunch(data.getUserId(), data.getPackageName(), appName);
+        }
+        VActivityManager.get().launchApp(data.getUserId(), data.getPackageName());
+    }
+
+    @Override
+    public void onAppLongClick(View view,AppData data,int position) {
         if (!data.isLoading()) {
             mLaunchpadAdapter.notifyItemChanged(position);
             //mPresenter.launchApp(data);
@@ -739,9 +757,5 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView, La
             MirrorActivity.launch(this,data.getPackageName(),data.getUserId());
             //VActivityManager.get().launchApp(data.getUserId(), data.getPackageName());
         }
-    }
-
-    @Override
-    public void onAppLongClick(View view,AppData data,int position) {
     }
 }

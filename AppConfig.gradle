@@ -1,5 +1,9 @@
 allprojects {
     repositories {
+//        maven {
+//            url 'http://nexus.ruidnet.com/repository/maven-public/'
+//            allowInsecureProtocol true
+//        }
         maven { url 'https://jitpack.io' }
         google()
         mavenCentral()
@@ -37,7 +41,7 @@ subprojects {
                 }
 
                 defaultConfig {
-                    minSdkVersion 21
+                    minSdkVersion 26
                     //noinspection OldTargetApi
                     targetSdkVersion 26
 
